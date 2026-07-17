@@ -1,43 +1,24 @@
 timestamp,sender,receiver,type,message
-2026-07-10 14:41:02,Jigyesh,ALL,Broadcast,"Yo, what's everyone doing tonight?"
-2026-07-10 14:41:14,Aman,ALL,Broadcast,Just got home. Thinking of ordering pizza.
-2026-07-10 14:41:23,Vivek,ALL,Broadcast,Lucky. I'm still stuck finishing homework.
-2026-07-10 14:41:39,NandKishore,ALL,Broadcast,Same here. This assignment is taking forever.
-2026-07-10 14:42:23,Jigyesh,ALL,Broadcast,We should hop on a game after you're done.
-2026-07-10 14:42:33,Aman,ALL,Broadcast,I'm down. Around 9?
-2026-07-10 14:42:42,Vivek,ALL,Broadcast,Works for me.
-2026-07-10 14:42:54,NandKishore,ALL,Broadcast,"Yeah, I'll be free by then."
-2026-07-10 14:43:10,Jigyesh,ALL,Broadcast,Cool. What are we playing?
-2026-07-10 14:43:19,Aman,ALL,Broadcast,I'd rather play Minecraft.
-2026-07-10 14:43:52,Vivek,ALL,Broadcast,Fortnite?
-2026-07-10 14:44:02,NandKishore,ALL,Broadcast,"Let's do a couple Fortnite matches, then Minecraft."
-2026-07-10 14:44:11,Jigyesh,ALL,Broadcast,Deal.
-2026-07-10 14:44:25,Vivek,ALL,Broadcast,"Also, who's bringing snacks if we hang out this weekend?"
-2026-07-10 14:44:33,NandKishore,ALL,Broadcast,I'll grab chips.
-2026-07-10 14:44:41,Aman,ALL,Broadcast,I'll bring drinks.
-2026-07-10 14:44:50,Jigyesh,ALL,Broadcast,I'll order pizza.
-2026-07-10 14:45:03,Aman,ALL,Broadcast,Perfect. Weekend plan is set.
-2026-07-10 14:45:21,NandKishore,ALL,Broadcast,"Finally, something to look forward to."
-2026-07-10 14:46:02,Aman,ALL,Broadcast,"Just don't be late this time, Jigyesh 😂"
-2026-07-10 14:46:15,Jigyesh,ALL,Broadcast,One time... and nobody lets me forget it.
-2026-07-10 14:46:25,Vivek,ALL,Broadcast,See you all online at 9.
-2026-07-10 14:46:31,NandKishore,ALL,Broadcast,Bet.
-2026-07-10 14:46:41,Aman,ALL,Broadcast,"Later, boys."
-2026-07-10 14:54:51,Aman,NandKishore,Private, hey Nandkishore
-2026-07-10 14:55:21,NandKishore,Aman,Private,yep Bro
-2026-07-10 14:55:57,Aman,NandKishore,Private," Just wanted to know , have you completed the maths assignment"
-2026-07-10 14:56:32,NandKishore,Aman,Private,"Yeah I've Completed it , let me share you the pdf of the assignment !"
-2026-07-10 14:56:50,Aman,NandKishore,Private,"Thank you so much bro , it will be very helpful"
-2026-07-10 14:57:16,NandKishore,ALL,Broadcast,Always welcome my brio !!!
-2026-07-10 14:57:29,Aman,ALL,Broadcast,See you in school bro
-2026-07-10 14:57:41,NandKishore,ALL,Broadcast,Bye
-2026-07-10 15:01:08,Vivek,Jigyesh,Private,hey bro are up ??
-2026-07-10 15:01:14,Jigyesh,Vivek,Private,yes bro !!
-2026-07-10 15:01:29,Vivek,Jigyesh,Private,i need some help about the physics numericals
-2026-07-10 15:01:52,Jigyesh,Vivek,Private,"yeah tell me , which problem ?"
-2026-07-10 15:02:27,Vivek,Jigyesh,Private,"it's the problem number unit-3 , question-53"
-2026-07-10 15:02:59,Jigyesh,Vivek,Private,"okay let me see it , give me 5 minutes"
-2026-07-10 15:03:10,Vivek,Jigyesh,Private,okay
-2026-07-10 15:03:38,Jigyesh,Vivek,Private,"yo , I have done the question , check photo i send"
-2026-07-10 15:04:10,Vivek,Jigyesh,Private,"thanks for the solution , i was stuck at this for so long"
-2026-07-10 15:04:23,Jigyesh,ALL,Broadcast,always welcome bro !!!
+2026-07-15 15:54:57,Aman,ALL,Broadcast,hii bro
+2026-07-15 15:55:06,Ritik,ALL,Broadcast,Hlo brother !!
+2026-07-15 15:55:10,Aman,ALL,Broadcast,how
+2026-07-15 15:55:13,Aman,ALL,Broadcast,are you
+2026-07-15 15:55:16,Aman,ALL,Broadcast,???
+2026-07-15 15:55:26,Ritik,ALL,Broadcast,"I am good bro , what about you ?"
+2026-07-15 15:55:32,Aman,ALL,Broadcast,I am good too !!
+2026-07-15 15:55:45,Aman,ALL,Broadcast,How's your job going ?
+2026-07-15 15:55:58,Ritik,ALL,Broadcast,It's going fine these days !!
+2026-07-15 15:56:10,Aman,ALL,Broadcast,oh that's cool actually !!
+2026-07-15 15:56:24,Aman,ALL,Broadcast,oh what's up other than that !!
+2026-07-15 15:56:52,Ritik,ALL,Broadcast,"yeahh , actually i forget to tell , i am planning a trip to manali with my collegues"
+2026-07-15 15:57:02,Aman,ALL,Broadcast,"okay , that's nice bro"
+2026-07-15 15:57:14,Ritik,ALL,Broadcast,have you talked about this with amma ?
+2026-07-15 15:57:25,Aman,ALL,Broadcast,what ?
+2026-07-15 15:57:38,Ritik,ALL,Broadcast,that you wanna buy a new bike ?
+2026-07-15 15:57:48,Aman,ALL,Broadcast,"bro , you know amma no ?"
+2026-07-15 15:57:56,Aman,ALL,Broadcast,she will not agree !!
+2026-07-15 15:58:09,Ritik,ALL,Broadcast,but you should ask her before making any decision
+2026-07-15 15:58:21,Aman,ALL,Broadcast,okay chetta !!
+2026-07-15 15:58:36,Ritik,ALL,Broadcast,yeah !!
+2026-07-15 15:58:47,Ritik,ALL,Broadcast,"okay then , bye !!"
+2026-07-15 15:58:50,Aman,ALL,Broadcast,byee

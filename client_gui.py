@@ -1,6 +1,6 @@
 """
 GUI-Based Multi-Client Chat Application (Client)
-Assignment 6 - Reuses networking logic from Assignment 5
+Assignment 7 - Secure Network Application Development
 
 Modules used: tkinter, tkinter.ttk, tkinter.scrolledtext, threading, socket, time
 """
@@ -20,7 +20,7 @@ class ChatClient:
     """
     Handles all TCP socket communication.
     Networking logic kept separate from GUI code.
-    Reused from Assignment 5 client.py with minimal changes.
+    Updated for Assignment 7 to support authentication.
     """
 
     def __init__(self):
@@ -28,13 +28,28 @@ class ChatClient:
         self.connected = False
         self.username = ""
 
-    def connect(self, server_ip, username):
-        """Connect to the chat server and send username."""
+    def connect(self, server_ip, username, password):
+        """Connect to the chat server and send credentials."""
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((server_ip, PORT))
         self.username = username
-        self.socket.send(username.encode())
-        self.connected = True
+        
+        # Send credentials
+        credentials = f"{username}\n{password}"
+        self.socket.send(credentials.encode())
+        
+        # Wait for authentication response
+        response = self.socket.recv(RECV_BUFFER).decode().strip()
+        
+        if response == "AUTH_SUCCESS":
+            self.connected = True
+        else:
+            self.socket.close()
+            self.socket = None
+            if response.startswith("AUTH_FAIL:"):
+                raise Exception(response[10:].strip())
+            else:
+                raise Exception(f"Unknown response from server: {response}")
 
     def send_message(self, message):
         """Send a message to the server."""
@@ -43,17 +58,21 @@ class ChatClient:
 
     def receive_message(self):
         """Receive a message from the server (blocking call)."""
-        return self.socket.recv(RECV_BUFFER).decode()
+        if self.connected and self.socket:
+            return self.socket.recv(RECV_BUFFER).decode()
+        return ""
 
     def disconnect(self):
         """Close the connection."""
-        self.connected = False
-        if self.socket:
+        if self.connected and self.socket:
             try:
+                self.socket.send("/logout\n".encode())
+                time.sleep(0.1) # Give it a moment to send
                 self.socket.close()
             except OSError:
                 pass
-            self.socket = None
+        self.connected = False
+        self.socket = None
 
 
 class LoginWindow:
@@ -65,7 +84,7 @@ class LoginWindow:
     def __init__(self, root):
         self.root = root
         self.root.title("Chat Application - Login")
-        self.root.geometry("400x300")
+        self.root.geometry("400x320")
         self.root.resizable(False, False)
 
         self.client = ChatClient()
@@ -84,9 +103,9 @@ class LoginWindow:
         title_frame = tk.Frame(self.root)
         title_frame.pack(pady=15)
 
-        tk.Label(title_frame, text="Multi-Client Chat",
+        tk.Label(title_frame, text="Secure Multi-Client Chat",
                  font=("Arial", 16, "bold")).pack()
-        tk.Label(title_frame, text="Assignment 6 - GUI Chat Application",
+        tk.Label(title_frame, text="Assignment 7 - Security Implementation",
                  font=("Arial", 9)).pack()
 
         # --- Form Frame ---
@@ -106,7 +125,7 @@ class LoginWindow:
                                         width=25, font=("Arial", 10))
         self.username_entry.grid(row=1, column=1, pady=5, padx=5)
 
-        # Password (optional, decorative)
+        # Password
         tk.Label(form_frame, text="Password:", font=("Arial", 10)).grid(
             row=2, column=0, sticky="w", pady=5)
         tk.Entry(form_frame, textvariable=self.password_var, show="*",
@@ -116,8 +135,8 @@ class LoginWindow:
         btn_frame = tk.Frame(self.root)
         btn_frame.pack(pady=10)
 
-        self.connect_btn = tk.Button(btn_frame, text="Connect", font=("Arial", 11, "bold"),
-                                      width=15, command=self.on_connect)
+        self.connect_btn = tk.Button(btn_frame, text="Connect / Register", font=("Arial", 11, "bold"),
+                                      width=20, command=self.on_connect)
         self.connect_btn.pack()
 
         # --- Status Label ---
@@ -131,11 +150,16 @@ class LoginWindow:
     def on_connect(self):
         """Validate input and attempt connection."""
         username = self.username_var.get().strip()
+        password = self.password_var.get().strip()
         server_ip = self.server_ip_var.get().strip()
 
         # --- Input validation ---
         if not username:
             messagebox.showerror("Error", "Username cannot be empty!")
+            return
+            
+        if not password:
+            messagebox.showerror("Error", "Password cannot be empty!")
             return
 
         if not server_ip:
@@ -147,12 +171,12 @@ class LoginWindow:
             return
 
         # --- Attempt connection ---
-        self.status_label.config(text="Connecting...", fg="orange")
+        self.status_label.config(text="Connecting and Authenticating...", fg="orange")
         self.connect_btn.config(state="disabled")
         self.root.update()
 
         try:
-            self.client.connect(server_ip, username)
+            self.client.connect(server_ip, username, password)
             self.status_label.config(text="Connected!", fg="green")
             self.root.after(500, self._open_chat_window)
         except ConnectionRefusedError:
@@ -166,8 +190,8 @@ class LoginWindow:
             self.status_label.config(text="Invalid address.", fg="red")
             self.connect_btn.config(state="normal")
         except Exception as e:
-            messagebox.showerror("Connection Failed", str(e))
-            self.status_label.config(text="Connection failed.", fg="red")
+            messagebox.showerror("Authentication Failed", str(e))
+            self.status_label.config(text="Authentication failed.", fg="red")
             self.connect_btn.config(state="normal")
 
     def _open_chat_window(self):
@@ -188,7 +212,7 @@ class ChatWindow:
     def __init__(self, root, client):
         self.root = root
         self.client = client
-        self.root.title(f"Chat - {client.username}")
+        self.root.title(f"Secure Chat - {client.username}")
         self.root.geometry("750x500")
         self.root.minsize(600, 400)
 
@@ -278,8 +302,8 @@ class ChatWindow:
         self.send_btn.pack(side="left", padx=(0, 5), pady=5)
 
         self.disconnect_btn = tk.Button(
-            bottom_frame, text="Disconnect", font=("Arial", 10),
-            width=10, command=self.on_disconnect
+            bottom_frame, text="Disconnect / Logout", font=("Arial", 10),
+            width=18, command=self.on_disconnect
         )
         self.disconnect_btn.pack(side="left", padx=(0, 5), pady=5)
 
@@ -308,6 +332,9 @@ class ChatWindow:
                 self.append_chat(f"[You] {message}\n")
             elif message == "/list" or message == "/users":
                 pass  # response will come from server
+            elif message == "/logout":
+                self.on_disconnect()
+                return
             # /msg echoes are handled by server response
 
         except Exception:
@@ -337,11 +364,7 @@ class ChatWindow:
         """
         Background thread: continuously receive messages from the server.
         Uses root.after() to safely update the GUI from a non-main thread.
-        This keeps the GUI responsive (Task 5 requirement).
-
-        TCP is a stream protocol — multiple server send() calls can arrive
-        in a single recv(). We split on newlines and process each part
-        individually so that USERLIST: messages are never missed.
+        This keeps the GUI responsive.
         """
         buffer = ""
         while self.client.connected:
@@ -375,6 +398,14 @@ class ChatWindow:
 
     def _process_line(self, line):
         """Process a single line/message from the server."""
+        
+        if line == "TIMEOUT":
+            self.append_chat("\n*** Disconnected due to inactivity ***\n")
+            return
+
+        if line.startswith("ERROR:"):
+            self.append_chat(f"\n*** {line} ***\n")
+            return
 
         # Handle USERLIST protocol message
         if line.startswith("USERLIST:"):
@@ -402,6 +433,7 @@ class ChatWindow:
         self.status_label.config(text=" ● Disconnected ", fg="red")
         self.send_btn.config(state="disabled")
         self.append_chat("\n*** Disconnected from server ***\n")
+        self.users_listbox.delete(0, tk.END)
 
     # -------------------------------------------------------- chat area
 
@@ -418,7 +450,7 @@ class ChatWindow:
         """Disconnect from server and close the window."""
         if self.client.connected:
             confirm = messagebox.askyesno("Disconnect",
-                                           "Are you sure you want to disconnect?")
+                                           "Are you sure you want to log out and disconnect?")
             if not confirm:
                 return
 

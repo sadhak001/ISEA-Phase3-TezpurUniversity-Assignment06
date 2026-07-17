@@ -1,8 +1,8 @@
-# Assignment 6: GUI-Based Multi-Client Chat Application Using TCP
+# Assignment 7: Secure Network Application Development Using TCP
 
 ## Objective
 
-Convert the terminal-based TCP chat application developed in Assignment 5 into a graphical desktop application using Python's `tkinter` library, while reusing the existing server implementation. This assignment introduces GUI programming, event-driven programming, multithreading, and user-friendly network application development.
+Enhance the GUI-based multi-client TCP application developed in Assignment 6 by implementing practical security mechanisms. This assignment introduces authentication, secure password storage using SHA-256 hashing, duplicate login prevention, input validation, failed login protection, and session management.
 
 ## Software Requirements
 
@@ -68,37 +68,30 @@ python3 client_gui.py
 
 ### 5. Using the Application
 
-1. Enter the server IP (`10.0.0.1`), your username, and click **Connect**
+1. Enter the server IP (`10.0.0.1`), your username, and your password, then click **Connect / Register**
+   - Note: If this is your first time logging in with a username, the server will securely auto-register you.
 2. Type messages in the input box and click **Send** or press Enter
 3. For private messages, type `/msg <username> <message>` or double-click a user in the Online Users list
-4. Click **Disconnect** to leave the chat
+4. Click **Disconnect / Logout** to cleanly leave the chat and terminate the session.
 
-## Features
+## Security Features (Assignment 7)
 
-- **GUI Login Window**: Username/password entry with input validation
-- **Chat Interface**: Scrollable message area with auto-scroll
-- **Online Users Panel**: Auto-updating list of connected users
-- **Broadcast Messaging**: Send messages to all connected users
-- **Private Messaging**: Send direct messages using `/msg` command
-- **Join/Leave Notifications**: Automatic system messages
-- **Background Threading**: Non-blocking message reception keeps GUI responsive
-- **Connection Status**: Visual indicator showing connection state
-
-## Implementation Description
-
-The application reuses the TCP server from Assignment 5 with minimal modifications:
-- Server now accepts clients continuously (no fixed count)
-- Added `USERLIST:` protocol message for GUI user list updates
-- All original features preserved (broadcast, private messaging, chat history, CSV logging)
-
-The GUI client (`client_gui.py`) separates networking logic (`ChatClient` class) from GUI code (`LoginWindow` and `ChatWindow` classes). A background thread handles `socket.recv()` and uses `root.after()` for thread-safe GUI updates.
+- **User Authentication**: Validates username and password credentials.
+- **Secure Password Storage**: Passwords are hashed using `SHA-256` before being saved to `users.csv`. No plaintext passwords are stored.
+- **Duplicate Login Prevention**: Rejects attempts to log into an account that is currently online elsewhere.
+- **Failed Login Protection**: Temporarily locks out an account for 60 seconds after 5 consecutive failed login attempts.
+- **Input Validation**: Rejects empty usernames/passwords, oversized messages (over 1000 characters), and unsupported commands.
+- **Session Management**: Implements an inactivity timeout (disconnects idle users after 3 minutes) and explicit `/logout` support.
+- **Secure Logging**: Persistent logging of authentication successes, failures, lockouts, and timeouts to `security_log.txt`.
 
 ## File Structure
 
 ```
 Assignment06/
-├── server.py          # Chat server (modified from Assignment 5)
-├── client_gui.py      # GUI chat client
+├── server.py          # Secure chat server
+├── client_gui.py      # Secure GUI chat client
+├── users.csv          # Hashed user database (generated)
+├── security_log.txt   # Security event logs (generated)
 ├── screenshots/       # Testing screenshots
 └── README.md          # This file
 ```

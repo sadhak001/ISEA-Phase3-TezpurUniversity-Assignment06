@@ -1,0 +1,23 @@
+[2026-07-15 15:50:12] USER_REGISTERED: New user 'Aman' registered.
+[2026-07-15 15:50:12] LOGIN_SUCCESS: User 'Aman' logged in successfully from IP 10.0.0.2.
+[2026-07-15 15:50:33] USER_REGISTERED: New user 'Sadhak' registered.
+[2026-07-15 15:50:33] LOGIN_SUCCESS: User 'Sadhak' logged in successfully from IP 10.0.0.3.
+[2026-07-15 15:51:41] LOGOUT: User 'Sadhak' logged out securely.
+[2026-07-15 15:52:16] LOGIN_REJECTED: Duplicate login attempt for 'Aman' from IP 10.0.0.3.
+[2026-07-15 15:53:14] SESSION_TIMEOUT: User 'Aman' disconnected due to inactivity.
+[2026-07-15 15:53:14] LOGOUT: User 'Aman' logged out securely.
+[2026-07-15 15:53:23] LOGOUT: User 'Aman' logged out securely.
+[2026-07-15 15:54:12] LOGIN_SUCCESS: User 'Aman' logged in successfully from IP 10.0.0.2.
+[2026-07-15 15:54:35] LOGIN_REJECTED: Duplicate login attempt for 'Aman' from IP 10.0.0.3.
+[2026-07-15 15:54:41] LOGIN_REJECTED: Duplicate login attempt for 'Aman' from IP 10.0.0.3.
+[2026-07-15 15:54:50] USER_REGISTERED: New user 'Ritik' registered.
+[2026-07-15 15:54:50] LOGIN_SUCCESS: User 'Ritik' logged in successfully from IP 10.0.0.3.
+[2026-07-15 15:59:10] LOGOUT: User 'Aman' logged out securely.
+[2026-07-15 15:59:12] LOGOUT: User 'Ritik' logged out securely.
+[2026-07-15 17:15:56] LOGIN_FAILED: Failed login for 'Aman' from IP 10.0.0.2.
+[2026-07-15 17:16:12] LOGIN_FAILED: Failed login for 'Aman' from IP 10.0.0.2.
+[2026-07-15 17:16:38] LOGIN_SUCCESS: User 'Aman' logged in successfully from IP 10.0.0.2.
+[2026-07-15 17:17:09] LOGIN_REJECTED: Duplicate login attempt for 'Aman' from IP 10.0.0.3.
+[2026-07-15 17:17:35] LOGIN_SUCCESS: User 'Ritik' logged in successfully from IP 10.0.0.3.
+[2026-07-15 17:18:24] LOGOUT: User 'Aman' logged out securely.
+[2026-07-15 17:18:26] LOGOUT: User 'Ritik' logged out securely.
