@@ -1,0 +1,27 @@
+{
+    "server": {
+        "host": "10.0.0.1",
+        "port": 5000,
+        "recv_buffer": 4096,
+        "max_message_length": 1000,
+        "session_timeout": 180,
+        "max_failed_attempts": 5,
+        "lockout_duration": 60,
+        "max_workers": 20,
+        "listen_backlog": 20,
+        "heartbeat_interval": 15
+    },
+    "client": {
+        "port": 5000,
+        "recv_buffer": 4096,
+        "reconnect_attempts": 3,
+        "reconnect_delay": 3,
+        "default_server_ip": "10.0.0.1"
+    },
+    "files": {
+        "chat_log": "chat_log.csv",
+        "connection_log": "connection_log.csv",
+        "users_file": "users.csv",
+        "security_log": "security_log.txt"
+    }
+}

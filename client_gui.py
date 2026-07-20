@@ -1,8 +1,15 @@
 """
 GUI-Based Multi-Client Chat Application (Client)
-Assignment 7 - Secure Network Application Development
+Assignment 8 - Optimization, Scalability and Reliability
 
-Modules used: tkinter, tkinter.ttk, tkinter.scrolledtext, threading, socket, time
+Enhancements over Assignment 7:
+- Configuration loaded from config.json
+- Automatic reconnection on unexpected disconnect
+- Heartbeat (PONG) response to server PING
+- Graceful shutdown with /logout
+- Improved exception handling with specific catches
+
+Modules used: tkinter, tkinter.ttk, tkinter.scrolledtext, threading, socket, time, json
 """
 
 import tkinter as tk
@@ -10,37 +17,73 @@ from tkinter import ttk, scrolledtext, messagebox
 import threading
 import socket
 import time
+import json
 
 
-PORT = 5000
-RECV_BUFFER = 4096
+# ---------------------------------------------------------------- config
+
+def load_config():
+    """Load client configuration from config.json with defaults."""
+    defaults = {
+        "port": 5000,
+        "recv_buffer": 4096,
+        "reconnect_attempts": 3,
+        "reconnect_delay": 3,
+        "default_server_ip": "10.0.0.1",
+    }
+    try:
+        with open("config.json", "r") as f:
+            cfg = json.load(f)
+        client_cfg = cfg.get("client", {})
+        defaults.update({
+            "port": client_cfg.get("port", defaults["port"]),
+            "recv_buffer": client_cfg.get("recv_buffer", defaults["recv_buffer"]),
+            "reconnect_attempts": client_cfg.get("reconnect_attempts", defaults["reconnect_attempts"]),
+            "reconnect_delay": client_cfg.get("reconnect_delay", defaults["reconnect_delay"]),
+            "default_server_ip": client_cfg.get("default_server_ip", defaults["default_server_ip"]),
+        })
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
+    return defaults
+
+
+CONFIG = load_config()
 
 
 class ChatClient:
     """
     Handles all TCP socket communication.
     Networking logic kept separate from GUI code.
-    Updated for Assignment 7 to support authentication.
+    Updated for Assignment 8 with reconnection and heartbeat support.
     """
 
     def __init__(self):
         self.socket = None
         self.connected = False
         self.username = ""
+        self.password = ""
+        self.server_ip = ""
 
     def connect(self, server_ip, username, password):
         """Connect to the chat server and send credentials."""
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((server_ip, PORT))
+        self.server_ip = server_ip
         self.username = username
-        
+        self.password = password
+
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.settimeout(10.0)  # 10s connection timeout
+        self.socket.connect((server_ip, CONFIG["port"]))
+        self.socket.settimeout(None)
+
         # Send credentials
         credentials = f"{username}\n{password}"
         self.socket.send(credentials.encode())
-        
+
         # Wait for authentication response
-        response = self.socket.recv(RECV_BUFFER).decode().strip()
-        
+        self.socket.settimeout(10.0)
+        response = self.socket.recv(CONFIG["recv_buffer"]).decode().strip()
+        self.socket.settimeout(None)
+
         if response == "AUTH_SUCCESS":
             self.connected = True
         else:
@@ -51,6 +94,11 @@ class ChatClient:
             else:
                 raise Exception(f"Unknown response from server: {response}")
 
+    def reconnect(self):
+        """Attempt to reconnect using stored credentials."""
+        self.disconnect_silent()
+        self.connect(self.server_ip, self.username, self.password)
+
     def send_message(self, message):
         """Send a message to the server."""
         if self.connected and self.socket:
@@ -59,20 +107,28 @@ class ChatClient:
     def receive_message(self):
         """Receive a message from the server (blocking call)."""
         if self.connected and self.socket:
-            return self.socket.recv(RECV_BUFFER).decode()
+            return self.socket.recv(CONFIG["recv_buffer"]).decode()
         return ""
 
     def disconnect(self):
-        """Close the connection."""
+        """Close the connection with /logout."""
         if self.connected and self.socket:
             try:
                 self.socket.send("/logout\n".encode())
-                time.sleep(0.1) # Give it a moment to send
+                time.sleep(0.1)
+            except (OSError, BrokenPipeError, ConnectionResetError):
+                pass
+        self.disconnect_silent()
+
+    def disconnect_silent(self):
+        """Close socket without sending /logout."""
+        self.connected = False
+        if self.socket:
+            try:
                 self.socket.close()
             except OSError:
                 pass
-        self.connected = False
-        self.socket = None
+            self.socket = None
 
 
 class LoginWindow:
@@ -90,7 +146,7 @@ class LoginWindow:
         self.client = ChatClient()
 
         # ---- StringVar for Entry widgets ----
-        self.server_ip_var = tk.StringVar(value="10.0.0.1")
+        self.server_ip_var = tk.StringVar(value=CONFIG["default_server_ip"])
         self.username_var = tk.StringVar()
         self.password_var = tk.StringVar()
 
@@ -103,9 +159,9 @@ class LoginWindow:
         title_frame = tk.Frame(self.root)
         title_frame.pack(pady=15)
 
-        tk.Label(title_frame, text="Secure Multi-Client Chat",
+        tk.Label(title_frame, text="Optimized Multi-Client Chat",
                  font=("Arial", 16, "bold")).pack()
-        tk.Label(title_frame, text="Assignment 7 - Security Implementation",
+        tk.Label(title_frame, text="Assignment 8 - Scalability & Reliability",
                  font=("Arial", 9)).pack()
 
         # --- Form Frame ---
@@ -135,7 +191,8 @@ class LoginWindow:
         btn_frame = tk.Frame(self.root)
         btn_frame.pack(pady=10)
 
-        self.connect_btn = tk.Button(btn_frame, text="Connect / Register", font=("Arial", 11, "bold"),
+        self.connect_btn = tk.Button(btn_frame, text="Connect / Register",
+                                      font=("Arial", 11, "bold"),
                                       width=20, command=self.on_connect)
         self.connect_btn.pack()
 
@@ -157,7 +214,7 @@ class LoginWindow:
         if not username:
             messagebox.showerror("Error", "Username cannot be empty!")
             return
-            
+
         if not password:
             messagebox.showerror("Error", "Password cannot be empty!")
             return
@@ -183,6 +240,11 @@ class LoginWindow:
             messagebox.showerror("Connection Failed",
                                  "Server is not running or refused the connection.")
             self.status_label.config(text="Connection refused.", fg="red")
+            self.connect_btn.config(state="normal")
+        except socket.timeout:
+            messagebox.showerror("Connection Failed",
+                                 "Connection timed out. Server may be unreachable.")
+            self.status_label.config(text="Timed out.", fg="red")
             self.connect_btn.config(state="normal")
         except socket.gaierror:
             messagebox.showerror("Connection Failed",
@@ -212,12 +274,13 @@ class ChatWindow:
     def __init__(self, root, client):
         self.root = root
         self.client = client
-        self.root.title(f"Secure Chat - {client.username}")
+        self.root.title(f"Optimized Chat - {client.username}")
         self.root.geometry("750x500")
         self.root.minsize(600, 400)
 
         self.message_var = tk.StringVar()
         self.online_users = []
+        self.reconnecting = False
 
         self._build_ui()
         self._start_receive_thread()
@@ -337,7 +400,7 @@ class ChatWindow:
                 return
             # /msg echoes are handled by server response
 
-        except Exception:
+        except (OSError, BrokenPipeError, ConnectionResetError):
             self.append_chat("*** Failed to send message ***\n")
 
         self.message_var.set("")
@@ -364,7 +427,7 @@ class ChatWindow:
         """
         Background thread: continuously receive messages from the server.
         Uses root.after() to safely update the GUI from a non-main thread.
-        This keeps the GUI responsive.
+        Handles PING/PONG heartbeat and auto-reconnection.
         """
         buffer = ""
         while self.client.connected:
@@ -374,16 +437,28 @@ class ChatWindow:
                     break
 
                 buffer += data
-                # Split into individual lines
                 lines = buffer.split("\n")
-                # Last element may be incomplete — keep it in the buffer
                 buffer = lines.pop()
 
                 for line in lines:
                     line = line.strip()
-                    if line:
-                        self.root.after(0, self._process_line, line)
+                    if not line:
+                        continue
 
+                    # Respond to heartbeat PING silently
+                    if line == "PING":
+                        try:
+                            self.client.send_message("PONG")
+                        except (OSError, BrokenPipeError, ConnectionResetError):
+                            pass
+                        continue
+
+                    self.root.after(0, self._process_line, line)
+
+            except ConnectionResetError:
+                break
+            except BrokenPipeError:
+                break
             except OSError:
                 break
             except Exception:
@@ -391,16 +466,77 @@ class ChatWindow:
 
         # Process any remaining data in the buffer
         if buffer.strip():
-            self.root.after(0, self._process_line, buffer.strip())
+            try:
+                self.root.after(0, self._process_line, buffer.strip())
+            except Exception:
+                pass
 
-        # Connection lost
-        self.root.after(0, self._on_connection_lost)
+        # Attempt auto-reconnection
+        self.root.after(0, self._attempt_reconnect)
+
+    def _attempt_reconnect(self):
+        """Try to reconnect automatically after unexpected disconnection."""
+        if self.reconnecting:
+            return
+        self.reconnecting = True
+
+        self.status_label.config(text=" ● Reconnecting... ", fg="orange")
+        self.send_btn.config(state="disabled")
+        self.append_chat("\n*** Connection lost. Attempting to reconnect... ***\n")
+
+        # Run reconnection in a thread to avoid blocking GUI
+        threading.Thread(target=self._reconnect_worker, daemon=True).start()
+
+    def _reconnect_worker(self):
+        """Worker thread that handles reconnection attempts."""
+        max_attempts = CONFIG["reconnect_attempts"]
+        delay = CONFIG["reconnect_delay"]
+
+        for attempt in range(1, max_attempts + 1):
+            self.root.after(0, self.append_chat,
+                           f"*** Reconnection attempt {attempt}/{max_attempts}... ***\n")
+            time.sleep(delay)
+            try:
+                self.client.reconnect()
+                # Success
+                self.reconnecting = False
+                self.root.after(0, self._on_reconnect_success)
+                return
+            except Exception:
+                pass
+
+        # All attempts failed
+        self.reconnecting = False
+        self.root.after(0, self._on_reconnect_failed)
+
+    def _on_reconnect_success(self):
+        """Update GUI after successful reconnection."""
+        self.status_label.config(text=" ● Connected ", fg="green")
+        self.send_btn.config(state="normal")
+        self.append_chat("*** Reconnected successfully! ***\n")
+        self._start_receive_thread()
+
+    def _on_reconnect_failed(self):
+        """Update GUI after all reconnection attempts fail."""
+        self.client.connected = False
+        self.status_label.config(text=" ● Disconnected ", fg="red")
+        self.send_btn.config(state="disabled")
+        self.append_chat("*** All reconnection attempts failed. Please restart the client. ***\n")
+        self.users_listbox.delete(0, tk.END)
 
     def _process_line(self, line):
         """Process a single line/message from the server."""
-        
+
         if line == "TIMEOUT":
             self.append_chat("\n*** Disconnected due to inactivity ***\n")
+            self.reconnecting = True  # Prevent auto-reconnect on timeout
+            self._on_connection_lost()
+            return
+
+        if line == "SERVER_SHUTDOWN":
+            self.append_chat("\n*** Server is shutting down ***\n")
+            self.reconnecting = True  # Prevent auto-reconnect on shutdown
+            self._on_connection_lost()
             return
 
         if line.startswith("ERROR:"):
@@ -428,7 +564,7 @@ class ChatWindow:
             self.users_listbox.insert(tk.END, user)
 
     def _on_connection_lost(self):
-        """Handle connection loss."""
+        """Handle connection loss (no auto-reconnect)."""
         self.client.connected = False
         self.status_label.config(text=" ● Disconnected ", fg="red")
         self.send_btn.config(state="disabled")
@@ -454,6 +590,7 @@ class ChatWindow:
             if not confirm:
                 return
 
+        self.reconnecting = True  # Prevent auto-reconnect on manual disconnect
         self.client.disconnect()
         self.root.destroy()
 
